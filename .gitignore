@@ -1,0 +1,30 @@
+*.class
+*.log
+
+# sbt specific
+dist/*
+project/target/
+project/project/target/
+target/*
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+
+#Grunt/Bower dependencies
+www/lib/*
+www/vendor/*
+www.old
+
+.idea
+
+dump.rdb
+
+.idea_modules/*.iml
+
+www.old/
+
+k2-backend/vendor
