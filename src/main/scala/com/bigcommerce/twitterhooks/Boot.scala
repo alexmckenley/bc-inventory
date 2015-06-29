@@ -5,6 +5,7 @@ import java.util.UUID
 import com.bigcommerce.api._
 import akka.actor._
 import com.bigcommerce.api.json.BigcommerceJsonProtocol
+import com.bigcommerce.twitterhooks.stripe.api.OrderItemTypes
 import com.typesafe.config.ConfigFactory
 import spray.http._
 import spray.httpx.SprayJsonSupport
@@ -68,7 +69,26 @@ object Boot
         val bcOrder = createBcOrderFromStripeOrder(stripeOrder)
 
         ctx.complete {
-          bcOrder.map(o => o.toJson(BigcommerceJsonProtocol.OrderJsonFormat).asJsObject)
+          bcOrder.map { order =>
+//            o.toJson(BigcommerceJsonProtocol.OrderJsonFormat).asJsObject
+            val taxItem = stripe.api.OrderItem(
+              parent = None,
+              itemType = OrderItemTypes.Tax,
+              amount = ((order.totalIncTax.get - order.totalExTax.get) * 100).toInt,
+              description = "Taxes",
+              quantity = None
+            )
+
+            val shippingItem = stripe.api.OrderItem(
+              parent = None,
+              itemType = OrderItemTypes.Shipping,
+              amount = (order.shippingCostExTax.get * 100).toInt,
+              description = "Shipping",
+              quantity = None
+            )
+
+            List(shippingItem,taxItem)
+          }
         }
       } ~
       path("pay") { ctx =>
